@@ -71,5 +71,9 @@ func (c *Client) GenerateMessage(diff string) (string, error) {
 		return "", errors.New("anthropic API returned an empty response")
 	}
 
-	return msg.Content[0].Text, nil
+	first := msg.Content[0]
+	if first.Type != "text" {
+		return "", fmt.Errorf("anthropic API returned unexpected content block type: %q", first.Type)
+	}
+	return first.Text, nil
 }
