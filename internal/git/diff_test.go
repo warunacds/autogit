@@ -27,7 +27,7 @@ func TestGetDiff_EmptyStaged(t *testing.T) {
 	defer os.Chdir(orig)
 	os.Chdir(dir)
 
-	diff, err := git.GetDiff(false) // staged only
+	diff, err := git.GetDiff(true) // stagedOnly=true: uses git diff --cached
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -45,7 +45,7 @@ func TestGetDiff_WithStagedFile(t *testing.T) {
 	os.WriteFile(filepath.Join(dir, "hello.txt"), []byte("hello world\n"), 0644)
 	exec.Command("git", "add", "hello.txt").Run()
 
-	diff, err := git.GetDiff(false)
+	diff, err := git.GetDiff(true) // stagedOnly=true: uses git diff --cached
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
