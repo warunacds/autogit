@@ -2,6 +2,7 @@ package editor_test
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/waruna/autogit/internal/editor"
@@ -24,16 +25,27 @@ func TestOpen_UsesEditorEnvVar(t *testing.T) {
 }
 
 func TestOpen_FallsBackToNano(t *testing.T) {
-	// Use `true` as EDITOR — exits 0 immediately without modifying the file
-	os.Setenv("EDITOR", "true")
-	defer os.Unsetenv("EDITOR")
+	// Create a fake `nano` script that exits 0 without modifying the file
+	fakeNano := filepath.Join(t.TempDir(), "nano")
+	script := "#!/bin/sh\nexit 0\n"
+	if err := os.WriteFile(fakeNano, []byte(script), 0755); err != nil {
+		t.Fatalf("failed to create fake nano: %v", err)
+	}
+
+	// Prepend fake nano's dir to PATH so it takes precedence
+	origPath := os.Getenv("PATH")
+	os.Setenv("PATH", filepath.Dir(fakeNano)+":"+origPath)
+	defer os.Setenv("PATH", origPath)
+
+	// Unset EDITOR so the fallback to nano is triggered
+	os.Unsetenv("EDITOR")
+	defer os.Setenv("EDITOR", os.Getenv("EDITOR")) // restore (may be empty, that's fine)
 
 	result, err := editor.Open("test message")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	// `true` exits immediately without modifying — original message returned
 	if result != "test message" {
-		t.Fatalf("expected original message returned, got %q", result)
+		t.Fatalf("expected %q, got %q", "test message", result)
 	}
 }

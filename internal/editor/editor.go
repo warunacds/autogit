@@ -28,7 +28,9 @@ func Open(message string) (string, error) {
 		editorCmd = "nano"
 	}
 
-	cmd := exec.Command(editorCmd, f.Name())
+	parts := strings.Fields(editorCmd)
+	args := append(parts[1:], f.Name())
+	cmd := exec.Command(parts[0], args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
