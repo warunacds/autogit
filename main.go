@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -76,6 +77,9 @@ func main() {
 	})
 
 	if err != nil {
+		if errors.Is(err, ui.ErrUserQuit) {
+			os.Exit(0)
+		}
 		fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
 		os.Exit(1)
 	}

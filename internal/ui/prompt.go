@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// ErrUserQuit is returned by Run when the user chooses to quit without committing.
+var ErrUserQuit = errors.New("user quit")
+
 // Choice represents what the user chose in the menu.
 type Choice int
 
@@ -75,7 +78,7 @@ func Run(opts RunOpts) error {
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				fmt.Println("\n[autogit] Aborted.")
-				os.Exit(0)
+				return ErrUserQuit
 			}
 			return fmt.Errorf("failed to read input: %w", err)
 		}
@@ -108,11 +111,16 @@ func Run(opts RunOpts) error {
 			message = newMsg
 
 		case ChoiceInlineEdit:
-			message = strings.TrimSpace(line)
+			newMsg := strings.TrimSpace(line)
+			if newMsg == "" {
+				fmt.Fprintln(os.Stderr, "[autogit] Empty message, keeping original.")
+				continue
+			}
+			message = newMsg
 
 		case ChoiceQuit:
 			fmt.Println("[autogit] Aborted.")
-			os.Exit(0)
+			return ErrUserQuit
 
 		default:
 			fmt.Println("[autogit] Unknown option. Use a/e/r/q or type a replacement message.")

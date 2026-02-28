@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -49,7 +50,7 @@ func (c *Client) GenerateMessage(diff string) (string, error) {
 	}
 
 	if len(diff) > maxDiffBytes {
-		fmt.Printf("warning: diff is %d bytes, truncating to %d bytes\n", len(diff), maxDiffBytes)
+		fmt.Fprintf(os.Stderr, "[autogit] Warning: diff is %d bytes, truncating to %d bytes\n", len(diff), maxDiffBytes)
 		diff = diff[:maxDiffBytes]
 	}
 
