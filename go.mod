@@ -1,4 +1,4 @@
-module github.com/waruna/autogit
+module github.com/warunacds/autogit
 
 go 1.25.6
 

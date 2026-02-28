@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/waruna/autogit/internal/claude"
-	"github.com/waruna/autogit/internal/editor"
-	"github.com/waruna/autogit/internal/git"
-	"github.com/waruna/autogit/internal/ui"
+	"github.com/warunacds/autogit/internal/claude"
+	"github.com/warunacds/autogit/internal/editor"
+	"github.com/warunacds/autogit/internal/git"
+	"github.com/warunacds/autogit/internal/ui"
 )
 
 func main() {

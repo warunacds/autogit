@@ -4,7 +4,18 @@
       "Bash(go mod:*)",
       "Bash(go build:*)",
       "Bash(go get:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(go version:*)",
+      "Bash(go test:*)",
+      "Bash(go vet:*)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(ANTHROPIC_API_KEY=\"\" ./autogit:*)",
+      "Bash(go:*)",
+      "Bash(staticcheck:*)",
+      "Bash(printf a\\\\n:*)",
+      "Bash(ANTHROPIC_API_KEY=\"\" /Users/waruna/Skunkwork/autogit/autogit:*)",
+      "Bash(xargs sed:*)"
     ]
   }
 }

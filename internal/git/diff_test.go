@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/waruna/autogit/internal/git"
+	"github.com/warunacds/autogit/internal/git"
 )
 
 func TestGetDiff_NotARepo(t *testing.T) {

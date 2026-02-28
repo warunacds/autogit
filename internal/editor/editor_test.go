@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/waruna/autogit/internal/editor"
+	"github.com/warunacds/autogit/internal/editor"
 )
 
 func TestOpen_UsesEditorEnvVar(t *testing.T) {

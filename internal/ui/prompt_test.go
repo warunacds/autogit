@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/waruna/autogit/internal/ui"
+	"github.com/warunacds/autogit/internal/ui"
 )
 
 func TestFormatMessage(t *testing.T) {
