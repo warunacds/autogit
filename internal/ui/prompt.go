@@ -2,7 +2,9 @@ package ui
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
@@ -71,6 +73,10 @@ func Run(opts RunOpts) error {
 
 		line, err := reader.ReadString('\n')
 		if err != nil {
+			if errors.Is(err, io.EOF) {
+				fmt.Println("\n[autogit] Aborted.")
+				os.Exit(0)
+			}
 			return fmt.Errorf("failed to read input: %w", err)
 		}
 
@@ -102,12 +108,7 @@ func Run(opts RunOpts) error {
 			message = newMsg
 
 		case ChoiceInlineEdit:
-			newMsg := strings.TrimSpace(line)
-			if newMsg == "" {
-				fmt.Fprintln(os.Stderr, "[autogit] Empty message, keeping original.")
-				continue
-			}
-			message = newMsg
+			message = strings.TrimSpace(line)
 
 		case ChoiceQuit:
 			fmt.Println("[autogit] Aborted.")
