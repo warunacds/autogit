@@ -26,6 +26,20 @@ feat: add user authentication with JWT tokens
 >
 ```
 
+With `--push` to automatically push after committing:
+
+```
+$ git add .
+$ autogit --push
+
+[autogit] Analyzing changes...
+[autogit] Generating commit message...
+...
+[autogit] Committed successfully!
+[autogit] Pushing...
+[autogit] Pushed successfully!
+```
+
 ## Requirements
 
 - Go 1.22+
@@ -79,6 +93,10 @@ autogit
 
 # Include unstaged changes too
 autogit --all
+
+# Commit and push in one step
+autogit --push
+autogit -p          # shorthand
 ```
 
 ### Interactive options
@@ -97,6 +115,7 @@ autogit --all
 2. Sends the diff to the Claude API with a Conventional Commits prompt
 3. Shows the generated message with an interactive menu
 4. Commits via `git commit -m` using your existing git config (name/email)
+5. Optionally pushes to the remote with `--push` / `-p`
 
 Diffs larger than 100 KB are automatically truncated before sending to the API.
 
@@ -107,6 +126,7 @@ Diffs larger than 100 KB are automatically truncated before sending to the API.
 | API key | `ANTHROPIC_API_KEY` environment variable |
 | Editor | `EDITOR` environment variable (falls back to `nano`) |
 | Diff scope | `--all` flag (default: staged only) |
+| Push after commit | `--push` / `-p` flag (default: off) |
 
 ## License
 

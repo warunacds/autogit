@@ -14,8 +14,11 @@ import (
 
 func main() {
 	allFlag := flag.Bool("all", false, "Include unstaged changes in addition to staged changes")
+	var pushFlag bool
+	flag.BoolVar(&pushFlag, "push", false, "Run git push after a successful commit")
+	flag.BoolVar(&pushFlag, "p", false, "Run git push after a successful commit (shorthand)")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: autogit [--all]\n\n")
+		fmt.Fprintf(os.Stderr, "Usage: autogit [--all] [--push]\n\n")
 		fmt.Fprintf(os.Stderr, "Generates a commit message from staged git changes using Claude AI.\n\n")
 		fmt.Fprintf(os.Stderr, "Flags:\n")
 		flag.PrintDefaults()
@@ -72,6 +75,13 @@ func main() {
 				return err
 			}
 			fmt.Println("[autogit] Committed successfully!")
+			if pushFlag {
+				fmt.Println("[autogit] Pushing...")
+				if err := git.Push(); err != nil {
+					return err
+				}
+				fmt.Println("[autogit] Pushed successfully!")
+			}
 			return nil
 		},
 	})
