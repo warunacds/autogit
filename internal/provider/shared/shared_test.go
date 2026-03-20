@@ -1,13 +1,13 @@
-package provider_test
+package shared_test
 
 import (
 	"testing"
 
-	"github.com/warunacds/autogit/internal/provider"
+	"github.com/warunacds/autogit/internal/provider/shared"
 )
 
 func TestValidateAndTruncateDiff_Empty(t *testing.T) {
-	_, err := provider.ValidateAndTruncateDiff("")
+	_, err := shared.ValidateAndTruncateDiff("")
 	if err == nil {
 		t.Fatal("expected error for empty diff")
 	}
@@ -15,7 +15,7 @@ func TestValidateAndTruncateDiff_Empty(t *testing.T) {
 
 func TestValidateAndTruncateDiff_Normal(t *testing.T) {
 	diff := "some diff content"
-	result, err := provider.ValidateAndTruncateDiff(diff)
+	result, err := shared.ValidateAndTruncateDiff(diff)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -29,11 +29,11 @@ func TestValidateAndTruncateDiff_Oversized(t *testing.T) {
 	for i := range big {
 		big[i] = 'x'
 	}
-	result, err := provider.ValidateAndTruncateDiff(string(big))
+	result, err := shared.ValidateAndTruncateDiff(string(big))
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(result) != provider.MaxDiffBytes {
-		t.Fatalf("expected truncated to %d bytes, got %d", provider.MaxDiffBytes, len(result))
+	if len(result) != shared.MaxDiffBytes {
+		t.Fatalf("expected truncated to %d bytes, got %d", shared.MaxDiffBytes, len(result))
 	}
 }

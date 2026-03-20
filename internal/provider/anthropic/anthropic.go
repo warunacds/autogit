@@ -7,7 +7,7 @@ import (
 
 	sdk "github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
-	"github.com/warunacds/autogit/internal/provider"
+	"github.com/warunacds/autogit/internal/provider/shared"
 )
 
 type Anthropic struct {
@@ -23,16 +23,16 @@ func New(apiKey string, model string) *Anthropic {
 }
 
 func (a *Anthropic) GenerateMessage(diff string) (string, error) {
-	diff, err := provider.ValidateAndTruncateDiff(diff)
+	diff, err := shared.ValidateAndTruncateDiff(diff)
 	if err != nil {
 		return "", err
 	}
 
 	msg, err := a.api.Messages.New(context.Background(), sdk.MessageNewParams{
 		Model:     sdk.Model(a.model),
-		MaxTokens: provider.MaxTokens,
+		MaxTokens: shared.MaxTokens,
 		System: []sdk.TextBlockParam{
-			{Text: provider.SystemPrompt},
+			{Text: shared.SystemPrompt},
 		},
 		Messages: []sdk.MessageParam{
 			sdk.NewUserMessage(sdk.NewTextBlock(diff)),

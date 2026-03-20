@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/warunacds/autogit/internal/provider"
+	"github.com/warunacds/autogit/internal/provider/shared"
 )
 
 type OpenAI struct {
@@ -48,7 +48,7 @@ type chatResponse struct {
 }
 
 func (o *OpenAI) GenerateMessage(diff string) (string, error) {
-	diff, err := provider.ValidateAndTruncateDiff(diff)
+	diff, err := shared.ValidateAndTruncateDiff(diff)
 	if err != nil {
 		return "", err
 	}
@@ -56,10 +56,10 @@ func (o *OpenAI) GenerateMessage(diff string) (string, error) {
 	reqBody := chatRequest{
 		Model: o.model,
 		Messages: []chatMessage{
-			{Role: "system", Content: provider.SystemPrompt},
+			{Role: "system", Content: shared.SystemPrompt},
 			{Role: "user", Content: diff},
 		},
-		MaxTokens: provider.MaxTokens,
+		MaxTokens: shared.MaxTokens,
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
