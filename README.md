@@ -82,6 +82,23 @@ sudo mv autogit /usr/local/bin/autogit
 autogit --help
 ```
 
+## Updating
+
+If you installed with `go install`:
+
+```bash
+go install github.com/warunacds/autogit@latest
+```
+
+If you built from source:
+
+```bash
+cd autogit
+git pull
+go build -o autogit .
+sudo mv autogit /usr/local/bin/autogit
+```
+
 ## Usage
 
 ```bash
