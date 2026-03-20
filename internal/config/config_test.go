@@ -108,6 +108,21 @@ func TestApplyOverrides_EmptyStringsNoOp(t *testing.T) {
 	}
 }
 
+func TestLoadUnknownProvider(t *testing.T) {
+	tmpDir := t.TempDir()
+	origHome := os.Getenv("HOME")
+	defer os.Setenv("HOME", origHome)
+	os.Setenv("HOME", tmpDir)
+
+	content := "provider: gemini\n"
+	os.WriteFile(filepath.Join(tmpDir, ".autogit.yaml"), []byte(content), 0644)
+
+	_, err := config.Load()
+	if err == nil {
+		t.Fatal("expected error for unknown provider")
+	}
+}
+
 func TestLoadInvalidYAML(t *testing.T) {
 	tmpDir := t.TempDir()
 	origHome := os.Getenv("HOME")

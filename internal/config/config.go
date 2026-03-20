@@ -111,6 +111,10 @@ func (c *Config) ApplyOverrides(provider, model string) {
 // validate normalises and validates the config, returning an error for any
 // field that would prevent autogit from functioning correctly.
 func (c *Config) validate() error {
+	if c.Provider != "claude" && c.Provider != "openai" {
+		return fmt.Errorf("unknown provider %q, supported: claude, openai", c.Provider)
+	}
+
 	c.OpenAI.BaseURL = strings.TrimRight(c.OpenAI.BaseURL, "/")
 
 	if c.OpenAI.BaseURL != "" {
