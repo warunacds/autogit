@@ -14,6 +14,39 @@ import (
 	"github.com/warunacds/autogit/internal/ui"
 )
 
+// selectAndStageFiles shows the interactive file selector, then unstages
+// everything and stages only the selected files.
+func selectAndStageFiles() error {
+	files, err := git.GetChangedFiles()
+	if err != nil {
+		return err
+	}
+	if len(files) == 0 {
+		return fmt.Errorf("no changes detected")
+	}
+
+	// Build selector entries — all pre-selected
+	entries := make([]ui.FileEntry, len(files))
+	for i, f := range files {
+		entries[i] = ui.FileEntry{
+			Path:     f.Path,
+			Label:    f.Status.StatusLabel(),
+			Selected: true,
+		}
+	}
+
+	selected, err := ui.RunSelector(entries)
+	if err != nil {
+		return err
+	}
+
+	// Unstage everything, then stage only what was selected
+	if err := git.UnstageAll(); err != nil {
+		return err
+	}
+	return git.StageFiles(selected)
+}
+
 func main() {
 	// Check for init subcommand before flag parsing
 	if len(os.Args) > 1 && os.Args[1] == "init" {
@@ -54,24 +87,53 @@ func main() {
 		os.Exit(1)
 	}
 
-	stagedOnly := !*allFlag
+	// If --all, show file selector for all changed files.
+	// If no --all and nothing staged, show file selector as fallback.
+	if *allFlag {
+		if err := selectAndStageFiles(); err != nil {
+			if errors.Is(err, ui.ErrUserQuit) {
+				os.Exit(0)
+			}
+			fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
+			os.Exit(1)
+		}
+	}
 
-	// Get the diff
+	// Get the staged diff
 	fmt.Println("[autogit] Analyzing changes...")
-	diff, err := git.GetDiff(stagedOnly)
+	diff, err := git.GetDiff(true)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	if diff == "" {
-		if stagedOnly {
-			fmt.Fprintln(os.Stderr, "[autogit] No staged changes found.")
-			fmt.Fprintln(os.Stderr, "  Run `git add <files>` first, or use `autogit --all` for unstaged changes.")
-		} else {
-			fmt.Fprintln(os.Stderr, "[autogit] No changes detected.")
+	// If nothing staged and --all was not used, try showing the file selector
+	if diff == "" && !*allFlag {
+		files, err := git.GetChangedFiles()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
+			os.Exit(1)
 		}
-		os.Exit(1)
+		if len(files) == 0 {
+			fmt.Fprintln(os.Stderr, "[autogit] No changes detected.")
+			os.Exit(1)
+		}
+		if err := selectAndStageFiles(); err != nil {
+			if errors.Is(err, ui.ErrUserQuit) {
+				os.Exit(0)
+			}
+			fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
+			os.Exit(1)
+		}
+		diff, err = git.GetDiff(true)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
+			os.Exit(1)
+		}
+		if diff == "" {
+			fmt.Fprintln(os.Stderr, "[autogit] No changes detected.")
+			os.Exit(1)
+		}
 	}
 
 	// Generate message

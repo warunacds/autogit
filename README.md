@@ -40,6 +40,22 @@ feat: add user authentication with JWT tokens
 >
 ```
 
+With `--all` to interactively select which files to stage:
+
+```
+$ autogit --all
+
+Select files to stage (3/4 selected):
+  [x]  M  internal/ui/prompt.go
+  [x]  A  internal/git/status.go
+> [ ]  ?  temp.log
+  [x]  M  main.go
+
+  ↑/↓ navigate  space toggle  a all  n none  enter confirm  q quit
+```
+
+If you run `autogit` without `--all` and nothing is staged, the file selector is shown automatically.
+
 With `--push` to automatically push after committing:
 
 ```
@@ -132,7 +148,7 @@ git add .
 # Generate and commit
 autogit
 
-# Include unstaged changes too
+# Select files to stage interactively
 autogit --all
 
 # Commit and push in one step
@@ -237,11 +253,12 @@ openai:
 ## How it works
 
 1. Loads provider config from `~/.autogit.yaml` (with CLI flag overrides)
-2. Reads your git diff (`git diff --cached` by default, or `git diff HEAD` with `--all`)
-3. Sends the diff to the configured AI provider with a Conventional Commits prompt
-4. Shows the generated message with an interactive menu
-5. Commits via `git commit -m` using your existing git config (name/email)
-6. Optionally pushes to the remote with `--push` / `-p` or interactively with `A`
+2. With `--all` (or when nothing is staged), shows an interactive file selector to choose which files to stage
+3. Reads your staged git diff (`git diff --cached`)
+4. Sends the diff to the configured AI provider with a Conventional Commits prompt
+5. Shows the generated message with an interactive menu
+6. Commits via `git commit -m` using your existing git config (name/email)
+7. Optionally pushes to the remote with `--push` / `-p` or interactively with `A`
 
 Diffs larger than 100 KB are automatically truncated before sending to the API.
 
