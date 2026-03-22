@@ -24,7 +24,7 @@ func TestParseChoice_ValidInputs(t *testing.T) {
 		expected ui.Choice
 	}{
 		{"a", ui.ChoiceAccept},
-		{"A", ui.ChoiceAccept},
+		{"A", ui.ChoiceAcceptAndPush},
 		{"e", ui.ChoiceEdit},
 		{"E", ui.ChoiceEdit},
 		{"r", ui.ChoiceRegenerate},

@@ -36,7 +36,7 @@ feat: add user authentication with JWT tokens
 - Store refresh tokens in Redis
 ─────────────────────────────────────────
 
-[a] Accept  [e] Edit in $EDITOR  [r] Regenerate  [q] Quit
+[a] Accept  [A] Accept and Push  [e] Edit in $EDITOR  [r] Regenerate  [q] Quit
 >
 ```
 
@@ -148,6 +148,7 @@ autogit --provider openai --model gpt-4o-mini
 | Key | Action |
 |-----|--------|
 | `a` | Accept the message and commit |
+| `A` | Accept the message, commit, and push |
 | `e` | Open `$EDITOR` to edit the message |
 | `r` | Regenerate — call the AI again for a new suggestion |
 | `q` | Quit without committing |
@@ -240,7 +241,7 @@ openai:
 3. Sends the diff to the configured AI provider with a Conventional Commits prompt
 4. Shows the generated message with an interactive menu
 5. Commits via `git commit -m` using your existing git config (name/email)
-6. Optionally pushes to the remote with `--push` / `-p`
+6. Optionally pushes to the remote with `--push` / `-p` or interactively with `A`
 
 Diffs larger than 100 KB are automatically truncated before sending to the API.
 

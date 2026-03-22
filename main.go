@@ -82,6 +82,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	commitAndMaybePush := func(msg string, push bool) error {
+		if err := git.Commit(msg); err != nil {
+			return err
+		}
+		fmt.Println("[autogit] Committed successfully!")
+		if push {
+			fmt.Println("[autogit] Pushing...")
+			if err := git.Push(); err != nil {
+				return err
+			}
+			fmt.Println("[autogit] Pushed successfully!")
+		}
+		return nil
+	}
+
 	// Interactive UI loop
 	err = ui.Run(ui.RunOpts{
 		InitialMessage: message,
@@ -90,18 +105,10 @@ func main() {
 		},
 		EditFn: editor.Open,
 		CommitFn: func(msg string) error {
-			if err := git.Commit(msg); err != nil {
-				return err
-			}
-			fmt.Println("[autogit] Committed successfully!")
-			if pushFlag {
-				fmt.Println("[autogit] Pushing...")
-				if err := git.Push(); err != nil {
-					return err
-				}
-				fmt.Println("[autogit] Pushed successfully!")
-			}
-			return nil
+			return commitAndMaybePush(msg, pushFlag)
+		},
+		CommitAndPushFn: func(msg string) error {
+			return commitAndMaybePush(msg, true)
 		},
 	})
 

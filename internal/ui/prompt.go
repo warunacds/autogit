@@ -16,12 +16,13 @@ var ErrUserQuit = errors.New("user quit")
 type Choice int
 
 const (
-	ChoiceUnknown    Choice = iota
-	ChoiceAccept            // a — commit as-is
-	ChoiceEdit              // e — open $EDITOR
-	ChoiceRegenerate        // r — call Claude again
-	ChoiceQuit              // q — exit without committing
-	ChoiceInlineEdit        // user typed a replacement message directly
+	ChoiceUnknown       Choice = iota
+	ChoiceAccept               // a — commit as-is
+	ChoiceAcceptAndPush        // A — commit and push
+	ChoiceEdit                 // e — open $EDITOR
+	ChoiceRegenerate           // r — call Claude again
+	ChoiceQuit                 // q — exit without committing
+	ChoiceInlineEdit           // user typed a replacement message directly
 )
 
 const separator = "─────────────────────────────────────────"
@@ -42,6 +43,10 @@ func ParseChoice(input string) Choice {
 	if len(trimmed) > 1 {
 		return ChoiceInlineEdit
 	}
+	// Case-sensitive check for A (accept and push)
+	if trimmed == "A" {
+		return ChoiceAcceptAndPush
+	}
 	switch strings.ToLower(trimmed) {
 	case "a":
 		return ChoiceAccept
@@ -58,10 +63,11 @@ func ParseChoice(input string) Choice {
 
 // RunOpts holds the dependencies for the UI loop.
 type RunOpts struct {
-	InitialMessage string
-	RegenerateFn   func() (string, error)      // called when user picks 'r'
-	EditFn         func(string) (string, error) // called when user picks 'e'
-	CommitFn       func(string) error           // called when user picks 'a'
+	InitialMessage  string
+	RegenerateFn    func() (string, error)      // called when user picks 'r'
+	EditFn          func(string) (string, error) // called when user picks 'e'
+	CommitFn        func(string) error           // called when user picks 'a'
+	CommitAndPushFn func(string) error           // called when user picks 'A'
 }
 
 // Run displays the message and runs the interactive menu loop until the user
@@ -72,7 +78,7 @@ func Run(opts RunOpts) error {
 
 	for {
 		fmt.Print(FormatMessage(message))
-		fmt.Print("\n[a] Accept  [e] Edit in $EDITOR  [r] Regenerate  [q] Quit\n> ")
+		fmt.Print("\n[a] Accept  [A] Accept and Push  [e] Edit in $EDITOR  [r] Regenerate  [q] Quit\n> ")
 
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -88,6 +94,13 @@ func Run(opts RunOpts) error {
 		switch choice {
 		case ChoiceAccept:
 			return opts.CommitFn(message)
+
+		case ChoiceAcceptAndPush:
+			if opts.CommitAndPushFn == nil {
+				fmt.Fprintln(os.Stderr, "[autogit] Push not available.")
+				continue
+			}
+			return opts.CommitAndPushFn(message)
 
 		case ChoiceEdit:
 			edited, err := opts.EditFn(message)
@@ -123,7 +136,7 @@ func Run(opts RunOpts) error {
 			return ErrUserQuit
 
 		default:
-			fmt.Println("[autogit] Unknown option. Use a/e/r/q or type a replacement message.")
+			fmt.Println("[autogit] Unknown option. Use a/A/e/r/q or type a replacement message.")
 		}
 	}
 }
