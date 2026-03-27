@@ -16,13 +16,14 @@ import (
 
 // selectAndStageFiles shows the interactive file selector, then unstages
 // everything and stages only the selected files.
-func selectAndStageFiles() error {
+// Returns the list of staged file paths.
+func selectAndStageFiles() ([]string, error) {
 	files, err := git.GetChangedFiles()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if len(files) == 0 {
-		return fmt.Errorf("no changes detected")
+		return nil, fmt.Errorf("no changes detected")
 	}
 
 	// Build selector entries — all pre-selected
@@ -37,14 +38,25 @@ func selectAndStageFiles() error {
 
 	selected, err := ui.RunSelector(entries)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Unstage everything, then stage only what was selected
 	if err := git.UnstageAll(); err != nil {
-		return err
+		return nil, err
 	}
-	return git.StageFiles(selected)
+	if err := git.StageFiles(selected); err != nil {
+		return nil, err
+	}
+
+	// Show staged files summary
+	fmt.Printf("\n[autogit] Staged %d file(s):\n", len(selected))
+	for _, p := range selected {
+		fmt.Printf("  • %s\n", p)
+	}
+	fmt.Println()
+
+	return selected, nil
 }
 
 func main() {
@@ -87,16 +99,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Track which files are staged (for display in the prompt UI)
+	var stagedFiles []string
+
 	// If --all, show file selector for all changed files.
 	// If no --all and nothing staged, show file selector as fallback.
 	if *allFlag {
-		if err := selectAndStageFiles(); err != nil {
+		selected, err := selectAndStageFiles()
+		if err != nil {
 			if errors.Is(err, ui.ErrUserQuit) {
 				os.Exit(0)
 			}
 			fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
 			os.Exit(1)
 		}
+		stagedFiles = selected
 	}
 
 	// Get the staged diff
@@ -118,13 +135,15 @@ func main() {
 			fmt.Fprintln(os.Stderr, "[autogit] No changes detected.")
 			os.Exit(1)
 		}
-		if err := selectAndStageFiles(); err != nil {
+		selected, err := selectAndStageFiles()
+		if err != nil {
 			if errors.Is(err, ui.ErrUserQuit) {
 				os.Exit(0)
 			}
 			fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
 			os.Exit(1)
 		}
+		stagedFiles = selected
 		diff, err = git.GetDiff(true)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "[autogit] Error: %v\n", err)
@@ -162,6 +181,7 @@ func main() {
 	// Interactive UI loop
 	err = ui.Run(ui.RunOpts{
 		InitialMessage: message,
+		StagedFiles:    stagedFiles,
 		RegenerateFn: func() (string, error) {
 			return p.GenerateMessage(diff)
 		},

@@ -64,6 +64,7 @@ func ParseChoice(input string) Choice {
 // RunOpts holds the dependencies for the UI loop.
 type RunOpts struct {
 	InitialMessage  string
+	StagedFiles     []string                     // files that will be committed
 	RegenerateFn    func() (string, error)      // called when user picks 'r'
 	EditFn          func(string) (string, error) // called when user picks 'e'
 	CommitFn        func(string) error           // called when user picks 'a'
@@ -77,6 +78,12 @@ func Run(opts RunOpts) error {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
+		if len(opts.StagedFiles) > 0 {
+			fmt.Printf("\nFiles to commit (%d):\n", len(opts.StagedFiles))
+			for _, f := range opts.StagedFiles {
+				fmt.Printf("  %s\n", f)
+			}
+		}
 		fmt.Print(FormatMessage(message))
 		fmt.Print("\n[a] Accept  [A] Accept and Push  [e] Edit in $EDITOR  [r] Regenerate  [q] Quit\n> ")
 

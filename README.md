@@ -52,6 +52,27 @@ Select files to stage (3/4 selected):
   [x]  M  main.go
 
   ↑/↓ navigate  space toggle  a all  n none  enter confirm  q quit
+
+[autogit] Staged 3 file(s):
+  • internal/ui/prompt.go
+  • internal/git/status.go
+  • main.go
+
+[autogit] Analyzing changes...
+[autogit] Generating commit message...
+
+Files to commit (3):
+  internal/ui/prompt.go
+  internal/git/status.go
+  main.go
+
+Generated message:
+─────────────────────────────────────────
+feat: add file selector and status parsing
+─────────────────────────────────────────
+
+[a] Accept  [A] Accept and Push  [e] Edit in $EDITOR  [r] Regenerate  [q] Quit
+>
 ```
 
 If you run `autogit` without `--all` and nothing is staged, the file selector is shown automatically.
