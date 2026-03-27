@@ -87,32 +87,25 @@ func (s *selectorState) render(w *os.File, firstRender bool) {
 		fmt.Fprintf(w, "\033[%dA", totalLines)
 	}
 
-	fmt.Fprintf(w, "\033[K\033[1mSelect files to stage (%d/%d selected):\033[0m\n",
+	fmt.Fprintf(w, "\033[K\033[1mSelect files to stage (%d/%d selected):\033[0m\r\n",
 		s.selectedCount(), len(s.entries))
 
 	for i, e := range s.entries {
-		cursor := "  "
-		if i == s.cursor {
-			cursor = "\033[36m> \033[0m"
+		var line string
+		if i == s.cursor && e.Selected {
+			line = fmt.Sprintf("\033[K\033[36m>\033[0m \033[32m[x]\033[0m  %s  %s", e.Label, e.Path)
+		} else if i == s.cursor && !e.Selected {
+			line = fmt.Sprintf("\033[K\033[36m>\033[0m \033[90m[ ]\033[0m  %s  \033[90m%s\033[0m", e.Label, e.Path)
+		} else if e.Selected {
+			line = fmt.Sprintf("\033[K  \033[32m[x]\033[0m  %s  %s", e.Label, e.Path)
+		} else {
+			line = fmt.Sprintf("\033[K  \033[90m[ ]  %s  %s\033[0m", e.Label, e.Path)
 		}
-
-		checkbox := "\033[90m[ ]\033[0m"
-		if e.Selected {
-			checkbox = "\033[32m[x]\033[0m"
-		}
-
-		pathStyle := ""
-		pathReset := ""
-		if !e.Selected {
-			pathStyle = "\033[90m"
-			pathReset = "\033[0m"
-		}
-
-		fmt.Fprintf(w, "\033[K%s%s  %s  %s%s%s\n", cursor, checkbox, e.Label, pathStyle, e.Path, pathReset)
+		fmt.Fprintf(w, "%s\r\n", line)
 	}
 
-	fmt.Fprintf(w, "\033[K\n")
-	fmt.Fprintf(w, "\033[K  \033[90m↑/↓ navigate  space toggle  a all  n none  enter confirm  q quit\033[0m\n")
+	fmt.Fprintf(w, "\033[K\r\n")
+	fmt.Fprintf(w, "\033[K  \033[90m↑/↓ navigate  space toggle  a all  n none  enter confirm  q quit\033[0m\r\n")
 }
 
 // RunSelector displays an interactive file selector and returns the paths
@@ -180,10 +173,10 @@ func RunSelector(entries []FileEntry) ([]string, error) {
 					// Don't quit — warn and let user fix their selection
 					continue
 				}
-				fmt.Fprintf(os.Stderr, "\n")
+				fmt.Fprintf(os.Stderr, "\r\n")
 				return selected, nil
 			case 'q', 3: // q or Ctrl+C
-				fmt.Fprintf(os.Stderr, "\n")
+				fmt.Fprintf(os.Stderr, "\r\n")
 				return nil, ErrUserQuit
 			}
 		} else if n == 3 && buf[0] == 27 && buf[1] == '[' {

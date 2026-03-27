@@ -46,9 +46,9 @@ func (s FileStatus) StatusLabel() string {
 // GetChangedFiles returns all files with changes (staged, unstaged, and untracked).
 func GetChangedFiles() ([]ChangedFile, error) {
 	cmd := exec.Command("git", "status", "--porcelain=v1")
-	out, err := cmd.CombinedOutput()
+	out, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("git status failed:\n%s", string(out))
+		return nil, fmt.Errorf("git status failed: %w", err)
 	}
 
 	output := strings.TrimSpace(string(out))
@@ -60,13 +60,15 @@ func GetChangedFiles() ([]ChangedFile, error) {
 	seen := make(map[string]bool)
 
 	for _, line := range strings.Split(output, "\n") {
-		if len(line) < 3 {
+		line = strings.TrimRight(line, "\r")
+		if len(line) < 4 {
 			continue
 		}
 
 		x := line[0] // index status
 		y := line[1] // worktree status
-		path := strings.TrimSpace(line[3:])
+		// Porcelain v1 format: "XY PATH" — extract path after first space at index 2+
+		path := strings.TrimSpace(line[2:])
 
 		// Handle renames: "R  old -> new"
 		if idx := strings.Index(path, " -> "); idx != -1 {
