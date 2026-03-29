@@ -21,9 +21,16 @@ func Run() error {
 		if err == nil {
 			fmt.Printf("Config already exists at %s:\n", config.Path())
 			fmt.Printf("  provider: %s\n", cfg.Provider)
-			if cfg.Provider == "claude" {
+			switch cfg.Provider {
+			case "claude":
 				fmt.Printf("  model: %s\n", cfg.Claude.Model)
-			} else {
+			case "claudecode":
+				if cfg.ClaudeCode.Model != "" {
+					fmt.Printf("  model: %s\n", cfg.ClaudeCode.Model)
+				} else {
+					fmt.Printf("  model: (CLI default)\n")
+				}
+			default:
 				fmt.Printf("  base_url: %s\n", cfg.OpenAI.BaseURL)
 				fmt.Printf("  model: %s\n", cfg.OpenAI.Model)
 			}
@@ -38,8 +45,9 @@ func Run() error {
 
 	// Select provider
 	fmt.Println("\nSelect a provider:")
-	fmt.Println("  1) Claude (Anthropic)")
-	fmt.Println("  2) OpenAI-compatible (ChatGPT, Ollama, LM Studio, Gemini, etc.)")
+	fmt.Println("  1) Claude (Anthropic API key)")
+	fmt.Println("  2) Claude Code (Pro/Max subscription — no API key needed)")
+	fmt.Println("  3) OpenAI-compatible (ChatGPT, Ollama, LM Studio, Gemini, etc.)")
 	fmt.Print("> ")
 	line, err := reader.ReadString('\n')
 	if err != nil {
@@ -68,6 +76,23 @@ func Run() error {
 		fmt.Println("  export ANTHROPIC_API_KEY=your-key-here")
 
 	case "2":
+		cfg.Provider = "claudecode"
+
+		fmt.Print("\nModel name (leave blank for CLI default): ")
+		line, _ = reader.ReadString('\n')
+		if model := strings.TrimSpace(line); model != "" {
+			cfg.ClaudeCode.Model = model
+		}
+
+		if err := config.Save(cfg); err != nil {
+			return fmt.Errorf("failed to save config: %w", err)
+		}
+
+		fmt.Printf("\nConfig saved to %s\n", config.Path())
+		fmt.Println("\nMake sure the claude CLI is installed and you're logged in:")
+		fmt.Println("  https://docs.anthropic.com/en/docs/claude-code")
+
+	case "3":
 		cfg.Provider = "openai"
 
 		fmt.Printf("\nBase URL [%s]: ", cfg.OpenAI.BaseURL)
@@ -92,7 +117,7 @@ func Run() error {
 		fmt.Println("(For local models like Ollama, you can skip this or set it to any value.)")
 
 	default:
-		return fmt.Errorf("invalid choice %q, please enter 1 or 2", choice)
+		return fmt.Errorf("invalid choice %q, please enter 1, 2, or 3", choice)
 	}
 
 	return nil

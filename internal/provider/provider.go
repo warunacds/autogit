@@ -7,6 +7,7 @@ import (
 
 	"github.com/warunacds/autogit/internal/config"
 	"github.com/warunacds/autogit/internal/provider/anthropic"
+	"github.com/warunacds/autogit/internal/provider/claudecode"
 	"github.com/warunacds/autogit/internal/provider/openai"
 )
 
@@ -23,6 +24,12 @@ func New(cfg *config.Config) (Provider, error) {
 		}
 		return anthropic.New(apiKey, cfg.Claude.Model), nil
 
+	case "claudecode":
+		if !claudecode.Available() {
+			return nil, fmt.Errorf("claude CLI not found on PATH.\n  Install Claude Code: https://docs.anthropic.com/en/docs/claude-code")
+		}
+		return claudecode.New(cfg.ClaudeCode.Model), nil
+
 	case "openai":
 		apiKey := os.Getenv("OPENAI_API_KEY")
 		if apiKey == "" && !isLocalURL(cfg.OpenAI.BaseURL) {
@@ -31,7 +38,7 @@ func New(cfg *config.Config) (Provider, error) {
 		return openai.New(apiKey, cfg.OpenAI.BaseURL, cfg.OpenAI.Model), nil
 
 	default:
-		return nil, fmt.Errorf("unknown provider %q, supported: claude, openai", cfg.Provider)
+		return nil, fmt.Errorf("unknown provider %q, supported: claude, claudecode, openai", cfg.Provider)
 	}
 }
 

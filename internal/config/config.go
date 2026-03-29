@@ -15,13 +15,20 @@ const configFileName = ".autogit.yaml"
 
 // Config holds all autogit configuration settings.
 type Config struct {
-	Provider string       `yaml:"provider"`
-	Claude   ClaudeConfig `yaml:"claude"`
-	OpenAI   OpenAIConfig `yaml:"openai"`
+	Provider   string          `yaml:"provider"`
+	Claude     ClaudeConfig    `yaml:"claude"`
+	ClaudeCode ClaudeCodeConfig `yaml:"claudecode"`
+	OpenAI     OpenAIConfig    `yaml:"openai"`
 }
 
 // ClaudeConfig holds Anthropic Claude provider settings.
 type ClaudeConfig struct {
+	Model string `yaml:"model"`
+}
+
+// ClaudeCodeConfig holds Claude Code CLI provider settings.
+// Model is optional — when empty the CLI uses its default model.
+type ClaudeCodeConfig struct {
 	Model string `yaml:"model"`
 }
 
@@ -102,6 +109,8 @@ func (c *Config) ApplyOverrides(provider, model string) {
 		switch c.Provider {
 		case "claude":
 			c.Claude.Model = model
+		case "claudecode":
+			c.ClaudeCode.Model = model
 		case "openai":
 			c.OpenAI.Model = model
 		}
@@ -111,8 +120,8 @@ func (c *Config) ApplyOverrides(provider, model string) {
 // validate normalises and validates the config, returning an error for any
 // field that would prevent autogit from functioning correctly.
 func (c *Config) validate() error {
-	if c.Provider != "claude" && c.Provider != "openai" {
-		return fmt.Errorf("unknown provider %q, supported: claude, openai", c.Provider)
+	if c.Provider != "claude" && c.Provider != "claudecode" && c.Provider != "openai" {
+		return fmt.Errorf("unknown provider %q, supported: claude, claudecode, openai", c.Provider)
 	}
 
 	c.OpenAI.BaseURL = strings.TrimRight(c.OpenAI.BaseURL, "/")

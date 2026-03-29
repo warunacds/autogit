@@ -100,11 +100,44 @@ func TestApplyOverrides_ModelOnlyAppliesToActiveProvider(t *testing.T) {
 	}
 }
 
+func TestApplyOverrides_ClaudeCode(t *testing.T) {
+	cfg := config.DefaultConfig()
+	cfg.ApplyOverrides("claudecode", "claude-sonnet-4-6")
+
+	if cfg.Provider != "claudecode" {
+		t.Fatalf("expected provider 'claudecode', got %q", cfg.Provider)
+	}
+	if cfg.ClaudeCode.Model != "claude-sonnet-4-6" {
+		t.Fatalf("expected claudecode model 'claude-sonnet-4-6', got %q", cfg.ClaudeCode.Model)
+	}
+}
+
 func TestApplyOverrides_EmptyStringsNoOp(t *testing.T) {
 	cfg := config.DefaultConfig()
 	cfg.ApplyOverrides("", "")
 	if cfg.Provider != "claude" {
 		t.Fatalf("expected provider unchanged, got %q", cfg.Provider)
+	}
+}
+
+func TestLoadClaudeCodeProvider(t *testing.T) {
+	tmpDir := t.TempDir()
+	origHome := os.Getenv("HOME")
+	defer os.Setenv("HOME", origHome)
+	os.Setenv("HOME", tmpDir)
+
+	content := "provider: claudecode\nclaudecode:\n  model: claude-sonnet-4-6\n"
+	os.WriteFile(filepath.Join(tmpDir, ".autogit.yaml"), []byte(content), 0644)
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.Provider != "claudecode" {
+		t.Fatalf("expected provider 'claudecode', got %q", cfg.Provider)
+	}
+	if cfg.ClaudeCode.Model != "claude-sonnet-4-6" {
+		t.Fatalf("expected model 'claude-sonnet-4-6', got %q", cfg.ClaudeCode.Model)
 	}
 }
 

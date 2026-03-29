@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/warunacds/autogit/internal/config"
@@ -75,6 +76,25 @@ func TestNew_OpenAI_RemoteMissingKey(t *testing.T) {
 	_, err := provider.New(cfg)
 	if err == nil {
 		t.Fatal("expected error for missing OPENAI_API_KEY with remote URL")
+	}
+}
+
+func TestNew_ClaudeCode(t *testing.T) {
+	cfg := &config.Config{
+		Provider:   "claudecode",
+		ClaudeCode: config.ClaudeCodeConfig{Model: ""},
+	}
+	// This test only passes if `claude` is on PATH. If not, we expect
+	// the "not found" error rather than an unknown-provider error.
+	p, err := provider.New(cfg)
+	if err != nil {
+		if !strings.Contains(err.Error(), "claude CLI not found") {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		return
+	}
+	if p == nil {
+		t.Fatal("expected non-nil provider")
 	}
 }
 

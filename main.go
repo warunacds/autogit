@@ -73,7 +73,7 @@ func main() {
 	var pushFlag bool
 	flag.BoolVar(&pushFlag, "push", false, "Run git push after a successful commit")
 	flag.BoolVar(&pushFlag, "p", false, "Run git push after a successful commit (shorthand)")
-	providerFlag := flag.String("provider", "", "Override AI provider (claude, openai)")
+	providerFlag := flag.String("provider", "", "Override AI provider (claude, claudecode, openai)")
 	modelFlag := flag.String("model", "", "Override model name")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: autogit [flags]\n")

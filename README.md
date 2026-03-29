@@ -2,7 +2,7 @@
 
 A CLI tool that generates git commit messages using AI.
 
-Analyzes your staged git diff, calls an AI model to suggest a [Conventional Commits](https://www.conventionalcommits.org/) message, then lets you accept, edit, regenerate, or abort — all from the terminal. Supports Claude, ChatGPT, Ollama, LM Studio, Gemini, and any OpenAI-compatible endpoint.
+Analyzes your staged git diff, calls an AI model to suggest a [Conventional Commits](https://www.conventionalcommits.org/) message, then lets you accept, edit, regenerate, or abort — all from the terminal. Supports Claude (API key or Claude Code Pro/Max subscription), ChatGPT, Ollama, LM Studio, Gemini, and any OpenAI-compatible endpoint.
 
 ## Demo
 
@@ -10,8 +10,9 @@ Analyzes your staged git diff, calls an AI model to suggest a [Conventional Comm
 $ autogit init
 
 Select a provider:
-  1) Claude (Anthropic)
-  2) OpenAI-compatible (ChatGPT, Ollama, LM Studio, Gemini, etc.)
+  1) Claude (Anthropic API key)
+  2) Claude Code (Pro/Max subscription — no API key needed)
+  3) OpenAI-compatible (ChatGPT, Ollama, LM Studio, Gemini, etc.)
 > 1
 
 Model name [claude-opus-4-6]:
@@ -94,7 +95,7 @@ $ autogit --push
 ## Requirements
 
 - Go 1.22+
-- An API key for your chosen provider (not needed for local models)
+- An API key for your chosen provider (not needed for local models or Claude Code)
 
 ## Setup
 
@@ -126,7 +127,7 @@ This creates `~/.autogit.yaml` with your provider, model, and endpoint settings.
 Add the appropriate key to your `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-# For Claude
+# For Claude (API key)
 export ANTHROPIC_API_KEY=sk-ant-...
 
 # For ChatGPT / OpenAI
@@ -135,7 +136,7 @@ export OPENAI_API_KEY=sk-...
 
 Then reload: `source ~/.zshrc`
 
-For local models (Ollama, LM Studio), no API key is needed.
+For Claude Code (Pro/Max subscription) and local models (Ollama, LM Studio), no API key is needed.
 
 **4. Verify it works**
 
@@ -178,6 +179,7 @@ autogit -p          # shorthand
 
 # Override provider or model for one run
 autogit --provider openai --model gpt-4o-mini
+autogit --provider claudecode
 ```
 
 ### Interactive options
@@ -207,10 +209,26 @@ claude:
   model: claude-opus-4-6
 ```
 
+### Claude Code (Pro/Max subscription)
+
+Uses the `claude` CLI — no API key needed. Requires a Claude Code Pro or Max subscription.
+
+```bash
+autogit init  # select 2) Claude Code
+# Make sure `claude` is installed and you're logged in
+```
+
+Config (`~/.autogit.yaml`):
+```yaml
+provider: claudecode
+claudecode:
+  model: ""  # leave empty for CLI default, or set a specific model
+```
+
 ### ChatGPT (OpenAI)
 
 ```bash
-autogit init  # select 2) OpenAI-compatible
+autogit init  # select 3) OpenAI-compatible
 # Use default base URL: https://api.openai.com/v1
 export OPENAI_API_KEY=sk-...
 ```
@@ -226,7 +244,7 @@ openai:
 ### Ollama (local)
 
 ```bash
-autogit init  # select 2) OpenAI-compatible
+autogit init  # select 3) OpenAI-compatible
 # Set base URL to: http://localhost:11434/v1
 # No API key needed
 ```
@@ -242,7 +260,7 @@ openai:
 ### LM Studio (local)
 
 ```bash
-autogit init  # select 2) OpenAI-compatible
+autogit init  # select 3) OpenAI-compatible
 # Set base URL to: http://localhost:1234/v1
 # No API key needed
 ```
@@ -258,7 +276,7 @@ openai:
 ### Gemini (Google)
 
 ```bash
-autogit init  # select 2) OpenAI-compatible
+autogit init  # select 3) OpenAI-compatible
 # Set base URL to: https://generativelanguage.googleapis.com/v1beta/openai
 export OPENAI_API_KEY=your-gemini-api-key
 ```
@@ -290,6 +308,7 @@ Diffs larger than 100 KB are automatically truncated before sending to the API.
 | Provider | `autogit init` or `--provider` flag |
 | Model | `autogit init` or `--model` flag |
 | Claude API key | `ANTHROPIC_API_KEY` environment variable |
+| Claude Code | `claude` CLI installed and logged in (Pro/Max subscription) |
 | OpenAI API key | `OPENAI_API_KEY` environment variable (not needed for local models) |
 | Editor | `EDITOR` environment variable (falls back to `nano`) |
 | Diff scope | `--all` flag (default: staged only) |
